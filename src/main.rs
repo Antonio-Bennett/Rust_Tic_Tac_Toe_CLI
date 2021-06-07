@@ -6,4 +6,7 @@ fn main() {
         "Player 1 is {} and Player 2 is {}",
         player1.name, player2.name
     );
+
+    let board = Board::new();
+    println!("{}", board);
 }
