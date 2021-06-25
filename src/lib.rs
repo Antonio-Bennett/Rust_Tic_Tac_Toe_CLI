@@ -105,7 +105,7 @@ impl fmt::Display for Board {
     }
 }
 
-pub fn game_setup() -> (Player, Player) {
+pub fn game_setup() -> (Player, Player, Board) {
     let mut player1 = String::new();
     let mut player2 = String::new();
 
@@ -125,7 +125,29 @@ pub fn game_setup() -> (Player, Player) {
     let player1 = Player::new(player1, 1);
     let player2 = Player::new(player2, 2);
 
-    (player1, player2)
+    println!(
+        "\nPlayer 1 is {} and Player 2 is {}",
+        player1.name, player2.name
+    );
+
+    (player1, player2, Board::new())
+}
+
+pub fn restart() -> bool {
+    let mut ans = String::new();
+    println!("\nWould you like to restart the game? Y or N");
+
+    io::stdin()
+        .read_line(&mut ans)
+        .expect("Could not read restart decision");
+
+    ans = ans.trim().to_uppercase();
+
+    if ans == "N" {
+        return false;
+    }
+
+    true
 }
 
 pub fn game_input(board: &mut Board, player: &Player, game_over: &mut bool) -> bool {
