@@ -69,10 +69,21 @@ impl Board {
         Some(false)
     }
 
-    pub fn modify_board(&mut self, pos: usize, character: char) {
+    pub fn modify_board(&mut self, pos: usize, character: char) -> bool {
+        let modified;
         self.moves_played += 1;
-        self.board[pos - 1] = character;
-        println!("{}", self);
+        if self.board[pos - 1] == 'X' {
+            println!("\nX is already played at that position");
+            modified = false;
+        } else if self.board[pos - 1] == 'O' {
+            println!("\nO is already played at that position");
+            modified = false;
+        } else {
+            self.board[pos - 1] = character;
+            modified = true;
+        }
+        println!("\n{}", self);
+        modified
     }
 }
 
@@ -98,12 +109,12 @@ pub fn game_setup() -> (Player, Player) {
     let mut player1 = String::new();
     let mut player2 = String::new();
 
-    println!("Enter Player 1 name: ");
+    println!("\nEnter Player 1 name: ");
     io::stdin()
         .read_line(&mut player1)
         .expect("Could not read player 1 name");
 
-    println!("Enter Player 2 name: ");
+    println!("\nEnter Player 2 name: ");
     io::stdin()
         .read_line(&mut player2)
         .expect("Could not read player 2 name");
@@ -117,9 +128,7 @@ pub fn game_setup() -> (Player, Player) {
     (player1, player2)
 }
 
-pub fn game_input(board: &mut Board, player: &Player, game_over: &mut bool) {
-    /* match board.check_game(player.order) {
-    Some(false) => { */
+pub fn game_input(board: &mut Board, player: &Player, game_over: &mut bool) -> bool {
     println!("{} choose your move: [1-9]", player.name);
     let mut position = String::new();
     io::stdin()
@@ -135,7 +144,7 @@ pub fn game_input(board: &mut Board, player: &Player, game_over: &mut bool) {
         character = 'O';
     }
 
-    board.modify_board(position, character);
+    let modified = board.modify_board(position, character);
     if let Some(result) = board.check_game(player.order) {
         if result {
             *game_over = true;
@@ -145,9 +154,6 @@ pub fn game_input(board: &mut Board, player: &Player, game_over: &mut bool) {
         *game_over = true;
         println!("It was a draw!");
     }
-    // }
-    // Some(true) => {
-    // }
-    // None => println!("It was a draw!"),
-    // }
+
+    modified
 }
