@@ -1,5 +1,6 @@
 use std::{char, fmt, io};
 
+//Player struct that holds the name of the player and the order they play in
 pub struct Player {
     pub name: String,
     pub order: u8,
@@ -14,6 +15,7 @@ impl Player {
     }
 }
 
+//The board - important thing is winning states holds the possible combos of winning which gives the check O(n) time, moves played help to calculate a draw
 pub struct Board {
     board: [char; 9],
     winning_states: [[usize; 3]; 8],
@@ -24,9 +26,11 @@ impl Board {
     pub fn new() -> Self {
         let mut board = ['\0'; 9];
         for num in 1..=9 {
+            //Initializes positions as nums 1-9 to make it easier for players to understand locations
             board[num - 1] = char::from_digit(num as u32, 10).unwrap();
         }
 
+        //This holds the posible indexes of winning moves
         let winning_states = [
             [0, 1, 2],
             [3, 4, 5],
@@ -38,6 +42,7 @@ impl Board {
             [2, 4, 6],
         ];
 
+        //When this reaches 9 we know the game is drawn
         let moves_played: u8 = 0;
 
         Self {
@@ -47,31 +52,40 @@ impl Board {
         }
     }
 
+    //Due to winning states field on struct this is an O(n) time check with n being number of winning positions
     pub fn check_game(&self, order: u8) -> Option<bool> {
-        if self.moves_played == 9 {
-            return None;
-        }
-
         let ch;
 
+        //Player order is passed so we know which character to check for a win
         if order == 1 {
             ch = 'X';
         } else {
             ch = 'O';
         }
 
+        //Iterate through the possible winning combos and check if the state of the board has the character in
+        //these positions
         for i in self.winning_states.iter() {
             if self.board[i[0]] == ch && self.board[i[1]] == ch && self.board[i[2]] == ch {
                 return Some(true);
             }
         }
 
+        //If 9 moves are played the board is filled and it is a draw
+        //The player might win on the 9th move so we have to check for win first
+        if self.moves_played == 9 {
+            return None;
+        }
+
+        //If no winninh position is found then the game continues
         Some(false)
     }
 
     pub fn modify_board(&mut self, pos: usize, character: char) -> bool {
+        //This is used in main game loop to know if current player should be switched since board changed
         let modified;
-        self.moves_played += 1;
+
+        //Checks if positions selected is already filled otherwise modify position and increment moves played
         if self.board[pos - 1] == 'X' {
             println!("\nX is already played at that position");
             modified = false;
@@ -80,13 +94,18 @@ impl Board {
             modified = false;
         } else {
             self.board[pos - 1] = character;
+            self.moves_played += 1;
             modified = true;
         }
+
+        //The board is printed after being modified
         println!("\n{}", self);
+
         modified
     }
 }
 
+//Implented Display trait so board is easily printed
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
@@ -105,6 +124,7 @@ impl fmt::Display for Board {
     }
 }
 
+//Initializes game pretty self explanatory
 pub fn game_setup() -> (Player, Player, Board) {
     let mut player1 = String::new();
     let mut player2 = String::new();
@@ -133,6 +153,7 @@ pub fn game_setup() -> (Player, Player, Board) {
     (player1, player2, Board::new())
 }
 
+//Confirms if game should be reinitialized after ending
 pub fn restart() -> bool {
     let mut ans = String::new();
     println!("\nWould you like to restart the game? Y or N");
@@ -150,13 +171,16 @@ pub fn restart() -> bool {
     true
 }
 
+//This is the main function in the game loop
 pub fn game_input(board: &mut Board, player: &Player, game_over: &mut bool) -> bool {
+    //Take players chosen square to play move
     println!("{} choose your move: [1-9]", player.name);
     let mut position = String::new();
     io::stdin()
         .read_line(&mut position)
         .expect("Couldn't read position choice");
 
+    //The position they chose and the coresponding character based on players order is defined
     let position = position.trim().parse::<usize>().unwrap();
     let character: char;
 
@@ -166,7 +190,10 @@ pub fn game_input(board: &mut Board, player: &Player, game_over: &mut bool) -> b
         character = 'O';
     }
 
+    //If the board is modified then other player gets to play otherwise current player moves again
     let modified = board.modify_board(position, character);
+
+    //Check if the game is won, drawn etc after the board is modified
     if let Some(result) = board.check_game(player.order) {
         if result {
             *game_over = true;
@@ -177,5 +204,6 @@ pub fn game_input(board: &mut Board, player: &Player, game_over: &mut bool) -> b
         println!("It was a draw!");
     }
 
+    //This is used inside loop to see if current player should go again
     modified
 }
