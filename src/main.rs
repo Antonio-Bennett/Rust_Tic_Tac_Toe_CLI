@@ -12,9 +12,14 @@ fn main() {
     let mut game_over = false;
     let mut curr_player = &player1;
 
-    while !game_over {
-        println!("{}", board);
+    //Initial display afterwards board printed in modification so that it will always be in latest updated state
+    println!("{}", board);
+
+    loop {
         game_input(&mut board, &curr_player, &mut game_over);
+        if game_over {
+            break;
+        }
         if curr_player.order == 1 {
             curr_player = &player2;
         } else {

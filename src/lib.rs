@@ -16,6 +16,8 @@ impl Player {
 
 pub struct Board {
     board: [char; 9],
+    winning_states: [[usize; 3]; 8],
+    moves_played: u8,
 }
 
 impl Board {
@@ -24,15 +26,53 @@ impl Board {
         for num in 1..=9 {
             board[num - 1] = char::from_digit(num as u32, 10).unwrap();
         }
-        Self { board }
+
+        let winning_states = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+        ];
+
+        let moves_played: u8 = 0;
+
+        Self {
+            board,
+            winning_states,
+            moves_played,
+        }
     }
 
-    pub fn check_game(&self) -> bool {
-        todo!()
+    pub fn check_game(&self, order: u8) -> Option<bool> {
+        if self.moves_played == 9 {
+            return None;
+        }
+
+        let ch;
+
+        if order == 1 {
+            ch = 'X';
+        } else {
+            ch = 'O';
+        }
+
+        for i in self.winning_states.iter() {
+            if self.board[i[0]] == ch && self.board[i[1]] == ch && self.board[i[2]] == ch {
+                return Some(true);
+            }
+        }
+
+        Some(false)
     }
 
     pub fn modify_board(&mut self, pos: usize, character: char) {
+        self.moves_played += 1;
         self.board[pos - 1] = character;
+        println!("{}", self);
     }
 }
 
@@ -78,26 +118,36 @@ pub fn game_setup() -> (Player, Player) {
 }
 
 pub fn game_input(board: &mut Board, player: &Player, game_over: &mut bool) {
-    match board.check_game() {
-        false => {
-            println!("{} choose your move: [1-9]", player.name);
-            let mut position = String::new();
-            io::stdin()
-                .read_line(&mut position)
-                .expect("Couldn't read position choice");
+    /* match board.check_game(player.order) {
+    Some(false) => { */
+    println!("{} choose your move: [1-9]", player.name);
+    let mut position = String::new();
+    io::stdin()
+        .read_line(&mut position)
+        .expect("Couldn't read position choice");
 
-            let position = position.trim().parse::<usize>().unwrap();
-            let character: char;
+    let position = position.trim().parse::<usize>().unwrap();
+    let character: char;
 
-            if player.order == 1 {
-                character = 'X';
-            } else {
-                character = 'O';
-            }
-            board.modify_board(position, character);
-        }
-        true => {
-            *game_over = true;
-        }
+    if player.order == 1 {
+        character = 'X';
+    } else {
+        character = 'O';
     }
+
+    board.modify_board(position, character);
+    if let Some(result) = board.check_game(player.order) {
+        if result {
+            *game_over = true;
+            println!("Congrats! {} won the game!", player.name);
+        }
+    } else {
+        *game_over = true;
+        println!("It was a draw!");
+    }
+    // }
+    // Some(true) => {
+    // }
+    // None => println!("It was a draw!"),
+    // }
 }
