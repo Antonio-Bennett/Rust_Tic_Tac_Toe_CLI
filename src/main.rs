@@ -31,7 +31,7 @@ fn main() {
             }
         }
 
-        if game_input(&mut board, &curr_player, &mut game_over) {
+        if game_input(&mut board, curr_player, &mut game_over) {
             //If the board is modified this will switch the current player
             //Otherwise current player will go again
             if curr_player.order == 1 {

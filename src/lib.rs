@@ -8,10 +8,7 @@ pub struct Player {
 
 impl Player {
     fn new(name: String, order: u8) -> Self {
-        Self {
-            name: name.to_string(),
-            order,
-        }
+        Self { name, order }
     }
 }
 
@@ -54,14 +51,8 @@ impl Board {
 
     //Due to winning states field on struct this is an O(n) time check with n being number of winning positions
     pub fn check_game(&self, order: u8) -> Option<bool> {
-        let ch;
-
         //Player order is passed so we know which character to check for a win
-        if order == 1 {
-            ch = 'X';
-        } else {
-            ch = 'O';
-        }
+        let ch = if order == 1 { 'X' } else { 'O' };
 
         //Iterate through the possible winning combos and check if the state of the board has the character in
         //these positions
@@ -102,6 +93,12 @@ impl Board {
         println!("\n{}", self);
 
         modified
+    }
+}
+
+impl Default for Board {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -150,7 +147,7 @@ pub fn game_setup() -> (Player, Player, Board) {
         player1.name, player2.name
     );
 
-    (player1, player2, Board::new())
+    (player1, player2, Board::default())
 }
 
 //Confirms if game should be reinitialized after ending
@@ -182,13 +179,8 @@ pub fn game_input(board: &mut Board, player: &Player, game_over: &mut bool) -> b
 
     //The position they chose and the coresponding character based on players order is defined
     let position = position.trim().parse::<usize>().unwrap();
-    let character: char;
 
-    if player.order == 1 {
-        character = 'X';
-    } else {
-        character = 'O';
-    }
+    let character = if player.order == 1 { 'X' } else { 'O' };
 
     //If the board is modified then other player gets to play otherwise current player moves again
     let modified = board.modify_board(position, character);
